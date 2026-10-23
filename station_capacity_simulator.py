@@ -1,7 +1,7 @@
 """
-Multi-Machine Uptime & Bottleneck Simulator - Production Version
+Manufacturing Station Capacity Simulation — Portfolio Demonstration
 
-- Models multiple stations in a production line (serial flow)
+- Simulates stations independently; no chronological serial flow, starvation or blocking
 - Each station has:
     * Mean cycle time
     * MTBF (mean time between failures)
@@ -9,7 +9,7 @@ Multi-Machine Uptime & Bottleneck Simulator - Production Version
     * Parallel units (machines in parallel)
 - Monte Carlo simulation over a fixed time horizon (e.g., 8h shift)
 - Outputs:
-    * Distribution of line throughput
+    * Distribution of minimum station capacity (line-capacity approximation)
     * Bottleneck probability per station
     * Average downtime per station
     * Plots saved as PNGs
@@ -128,7 +128,7 @@ class MultiMachineLineSimulator:
                 station_downtime[cfg.name] += res.total_downtime
                 station_units[cfg.name] += res.total_units
 
-            # line throughput = limited by station with fewest units
+            # Capacity approximation: minimum of independently simulated station totals
             units_per_station = [r.total_units for r in results]
             line_throughput = min(units_per_station)
             line_throughputs.append(line_throughput)
@@ -195,8 +195,8 @@ def example_usage():
     station_busy_time = summary["station_busy_time"]
     station_downtime = summary["station_downtime"]
 
-    print("=== LINE THROUGHPUT SUMMARY ===")
-    print(f"Mean throughput per {horizon_hours:.1f}h = {line_throughputs.mean():.1f} units")
+    print("=== MINIMUM STATION CAPACITY SUMMARY ===")
+    print(f"Mean capacity per {horizon_hours:.1f}h = {line_throughputs.mean():.1f} units")
     print(f"5th percentile                = {np.percentile(line_throughputs, 5):.1f} units")
     print(f"95th percentile               = {np.percentile(line_throughputs, 95):.1f} units")
 
@@ -215,9 +215,9 @@ def example_usage():
     # Throughput distribution
     plt.figure()
     plt.hist(line_throughputs, bins=30, density=True)
-    plt.xlabel(f"Units produced in {horizon_hours:.1f} hours")
+    plt.xlabel(f"Capacity approximation in {horizon_hours:.1f} hours")
     plt.ylabel("Probability density")
-    plt.title("Line Throughput Distribution")
+    plt.title("Minimum Station Capacity Distribution")
     plt.grid(True)
     plt.tight_layout()
     plt.savefig("line_throughput_distribution.png", dpi=150)
