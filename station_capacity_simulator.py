@@ -15,6 +15,8 @@ Manufacturing Station Capacity Simulation — Portfolio Demonstration
     * Plots saved as PNGs
 """
 
+from pathlib import Path
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
@@ -34,6 +36,13 @@ class StationConfig:
     parallel_units: int = 1      # number of identical machines in parallel
 
 
+    def __post_init__(self):
+        for value in (self.mean_cycle_time_sec, self.mtbf_hours, self.mttr_hours):
+            if not math.isfinite(value) or value <= 0:
+                raise ValueError('Cycle, MTBF and MTTR values must be finite and positive')
+        if isinstance(self.parallel_units, bool) or not isinstance(self.parallel_units, int) or self.parallel_units < 1:
+            raise ValueError('parallel_units must be a positive integer')
+
 @dataclass
 class StationResult:
     name: str
@@ -44,6 +53,10 @@ class StationResult:
 
 class MultiMachineLineSimulator:
     def __init__(self, stations: List[StationConfig], horizon_hours: float):
+        if not stations or len({s.name for s in stations}) != len(stations):
+            raise ValueError('Stations must be nonempty with unique names')
+        if not math.isfinite(horizon_hours) or horizon_hours <= 0:
+            raise ValueError('horizon_hours must be finite and positive')
         self.stations = stations
         self.horizon_hours = horizon_hours
         self.horizon_sec = horizon_hours * 3600.0
@@ -111,6 +124,8 @@ class MultiMachineLineSimulator:
     # Monte Carlo Over the Line
     # -----------------------------
     def run_monte_carlo(self, runs: int = 500, seed: int = 42):
+        if isinstance(runs, bool) or not isinstance(runs, int) or runs < 1:
+            raise ValueError('runs must be a positive integer')
         rng = np.random.default_rng(seed)
 
         line_throughputs = []
@@ -212,7 +227,10 @@ def example_usage():
     # Plots
     # -------------------------------------------------
 
-    # Throughput distribution
+    output = Path(__file__).resolve().parent / "assets"
+    output.mkdir(exist_ok=True)
+
+    # Capacity distribution
     plt.figure()
     plt.hist(line_throughputs, bins=30, density=True)
     plt.xlabel(f"Capacity approximation in {horizon_hours:.1f} hours")
@@ -220,7 +238,7 @@ def example_usage():
     plt.title("Minimum Station Capacity Distribution")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("line_throughput_distribution.png", dpi=150)
+    plt.savefig(output / "line_throughput_distribution.png", dpi=150)
     plt.close()
 
     # Bottleneck probability bar chart
@@ -232,7 +250,7 @@ def example_usage():
     plt.xticks(rotation=20, ha="right")
     plt.grid(axis="y")
     plt.tight_layout()
-    plt.savefig("bottleneck_probability.png", dpi=150)
+    plt.savefig(output / "bottleneck_probability.png", dpi=150)
     plt.close()
 
     # Average downtime per station
@@ -244,9 +262,10 @@ def example_usage():
     plt.xticks(rotation=20, ha="right")
     plt.grid(axis="y")
     plt.tight_layout()
-    plt.savefig("station_downtime.png", dpi=150)
+    plt.savefig(output / "station_downtime.png", dpi=150)
     plt.close()
 
 
 if __name__ == "__main__":
     example_usage()
+

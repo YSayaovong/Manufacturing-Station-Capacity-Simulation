@@ -10,12 +10,21 @@ Install numpy and matplotlib, then:
 ```bash
 python station_capacity_simulator.py
 ```
-The example uses seed 123 and writes throughput, bottleneck and downtime PNGs into the working directory. Existing screenshots are in `assets/`.
+The example uses seed 123 and writes capacity, bottleneck and downtime PNGs into `assets/` relative to the script. Historical PNG filenames are retained.
 
 ## Interpretation and limitations
 Stations are simulated independently with no starvation or blocking. Taking the minimum of their total capacities does not model chronological movement, buffers, transfer times or actual serial-line throughput. Incomplete cycle time is discarded at each failure interval. Ties count for every tied station, so bottleneck percentages can sum above 100%.
 
-Parameters are illustrative rather than calibrated to a documented factory dataset. Input validation, automated tests, benchmark comparisons and sensitivity experiments remain development work. This is a capacity-model learning project, not production-grade scheduling or reliability software.
+Parameters are illustrative rather than calibrated to a documented factory dataset. Positive finite configuration values, unique station names and positive integer run counts are validated. Four tests cover invalid inputs, seeded repeatability and capacity bounds. Benchmark comparisons and sensitivity experiments remain development work. This is a capacity-model learning project, not production-grade scheduling or reliability software.
 
 ## File naming and authorship
 The script is named `station_capacity_simulator.py` to describe its implementation. Historical PNG filenames are retained for compatibility. Console and chart titles now label the minimum-station result as a capacity approximation. Naming/documentation changes were developed with AI assistance; they do not add a serial-flow model.
+
+
+## Reproduce validation
+```bash
+python -m pip install -r requirements.txt
+python -m unittest discover -s tests -v
+python station_capacity_simulator.py
+```
+The 500-run seed-123 example gives mean minimum-station capacity of about 356.4 units per eight-hour horizon. This is an assumption-based supporting project, not a result from a factory dataset or a resume claim of implemented production optimization.
