@@ -17,10 +17,6 @@ Stations are simulated independently with no starvation or blocking. Taking the 
 
 Parameters are illustrative rather than calibrated to a documented factory dataset. Positive finite configuration values, unique station names and positive integer run counts are validated. Four tests cover invalid inputs, seeded repeatability and capacity bounds. Benchmark comparisons and sensitivity experiments remain development work. This is a capacity-model learning project, not production-grade scheduling or reliability software.
 
-## File naming and authorship
-The script is named `station_capacity_simulator.py` to describe its implementation. Historical PNG filenames are retained for compatibility. Console and chart titles now label the minimum-station result as a capacity approximation. Naming/documentation changes were developed with AI assistance; they do not add a serial-flow model.
-
-
 ## Reproduce validation
 ```bash
 python -m pip install -r requirements.txt
